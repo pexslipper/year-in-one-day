@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>2026 in review</title>
+    <meta name="description" content="Twelve months of work laid out as a single day, from first light in January to after dark in December." />
+    <meta name="theme-color" content="#10142f" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas class="scene" aria-hidden="true"></canvas>
+
+    <header class="topbar" data-ui>
+      <a class="studio" href="./" data-site="studio">Your Studio</a>
+      <nav class="topnav" aria-label="Site">
+        <button type="button" class="textbtn" data-action="index">Index</button>
+        <a class="textbtn" data-site="contact" href="mailto:hello@example.com">Say hello</a>
+      </nav>
+    </header>
+
+    <footer class="bottombar" data-ui>
+      <nav class="rail" aria-label="Months">
+        <ol class="rail-months"></ol>
+        <div class="rail-line"><span class="rail-fill"></span></div>
+      </nav>
+      <p class="hint">
+        <span class="hint-fine">Scroll, drag or use the arrow keys</span>
+        <span class="hint-coarse">Swipe up to move through the year</span>
+      </p>
+      <button type="button" class="textbtn restart" data-action="restart" hidden>Back to January</button>
+    </footer>
+
+    <section class="intro" aria-labelledby="intro-title">
+      <div class="intro-inner">
+        <h1 id="intro-title" class="intro-title" data-site="headline">Our 2026, from first light to last</h1>
+        <p class="intro-text" data-site="intro">Twelve months of work laid out as a single day.</p>
+        <div class="intro-action">
+          <div class="loader" role="progressbar" aria-label="Loading the year" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span class="loader-line"><span class="loader-fill"></span></span>
+            <span class="loader-value">0%</span>
+          </div>
+          <button type="button" class="start" data-action="start" hidden>Start in January</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" role="dialog" aria-labelledby="panel-title" hidden>
+      <button type="button" class="textbtn panel-close" data-action="close">Close</button>
+      <p class="panel-date"></p>
+      <h2 class="panel-title" id="panel-title" tabindex="-1"></h2>
+      <p class="panel-thai" lang="th" hidden></p>
+      <p class="panel-text"></p>
+      <a class="textbtn panel-link" target="_blank" rel="noopener" hidden>Visit the project</a>
+      <div class="panel-nav">
+        <button type="button" class="textbtn" data-action="prev">Previous</button>
+        <button type="button" class="textbtn" data-action="next">Next</button>
+      </div>
+    </aside>
+
+    <div class="index" role="dialog" aria-modal="true" aria-labelledby="index-title" hidden>
+      <div class="index-head">
+        <h2 id="index-title" class="index-title">Index</h2>
+        <button type="button" class="textbtn" data-action="index-close">Close</button>
+      </div>
+      <p class="index-note" hidden>Your browser can't show the 3D view, so here's the whole year as a list.</p>
+      <div class="index-grid"></div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
