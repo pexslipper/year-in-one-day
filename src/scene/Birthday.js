@@ -293,7 +293,8 @@ export class Birthday {
     const o = this.opacity * fade;
     for (const m of this.materials) m.opacity = o;
     for (const f of this.flames) {
-      const flicker = reducedMotion ? 1 : 1 + Math.sin(time * 17 + f.seed) * 0.08 + Math.sin(time * 29 + f.seed * 3) * 0.05;
+      const k = reducedMotion ? 0.4 : 1; // gentler flicker in the calm version
+      const flicker = 1 + (Math.sin(time * 17 + f.seed) * 0.08 + Math.sin(time * 29 + f.seed * 3) * 0.05) * k;
       f.flame.scale.set(14 * (2 - flicker), 28 * flicker, 1);
       f.flame.material.opacity = o;
       f.glow.material.opacity = o * (0.75 + (flicker - 1) * 2);
@@ -306,7 +307,7 @@ export class Birthday {
     this.captionOpacity = damp(this.captionOpacity ?? 1, focused || dimmed ? 0 : 1, 6, dt);
     this.caption.material.uniforms.uOpacity.value = this.captionOpacity;
 
-    if (!reducedMotion) this.cake.rotation.y += dt * 0.35;
+    this.cake.rotation.y += dt * (reducedMotion ? 0.12 : 0.35);
     this.cake.scale.setScalar(1 + this.hover * 0.05);
   }
 

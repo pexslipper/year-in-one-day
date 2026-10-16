@@ -37,8 +37,9 @@ const GRAVITY = 70;
  * fixed-size pool that is reused, so there's no garbage while it runs.
  */
 export class Fireworks {
-  constructor({ max = 2600 } = {}) {
+  constructor({ max = 2600, calm = false } = {}) {
     this.max = max;
+    this.calm = calm; // smaller, softer bursts with no bright flash
     this.cursor = 0;
     this.alive = 0;
     this.rockets = [];
@@ -111,8 +112,8 @@ export class Fireworks {
     });
   }
 
-  burst(p, color, count = 190) {
-    const speed = 280 + Math.random() * 120;
+  burst(p, color, count = this.calm ? 120 : 190) {
+    const speed = (this.calm ? 200 : 280) + Math.random() * 120;
     const white = new THREE.Color('#ffffff');
     const tint = new THREE.Color();
     const ring = Math.random() < 0.25; // some bursts are flat rings instead of spheres
@@ -128,8 +129,8 @@ export class Fireworks {
       tint.copy(color).lerp(white, Math.random() * 0.35);
       this.spawn(p.x, p.y, p.z, dx * k, dy * k, dz * k, tint, 15 + Math.random() * 9, 0.5 + Math.random() * 0.3);
     }
-    // A bright flash at the centre.
-    this.spawn(p.x, p.y, p.z, 0, 0, 0, white, 140, 3.5);
+    // A bright flash at the centre (left out in the calm version).
+    if (!this.calm) this.spawn(p.x, p.y, p.z, 0, 0, 0, white, 140, 3.5);
   }
 
   update(dt) {

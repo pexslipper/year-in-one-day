@@ -49,7 +49,9 @@ Several Buddhist holidays (Makha Bucha, Visakha Bucha, Asanha Bucha, Ok Phansa, 
 - Set `color` and `motif` for its date card, like the other special days.
 - The cake colours are at the top of `src/scene/Birthday.js`, and the firework and confetti colours at the top of `src/scene/Fireworks.js` and `src/scene/Confetti.js`.
 
-Fireworks and confetti are switched off when someone has "reduce motion" turned on.
+Fireworks and confetti play on every device without anyone changing a setting. If a visitor's device asks for reduced motion (an accessibility setting), they get a calmer version: fewer pieces, slower falling, fewer fireworks and no bright flash. To change how much, look for `calm` in `src/scene/Experience.js`.
+
+The 3D view needs WebGL2, which nearly every phone, tablet and computer from the last several years has. On a device without it, visitors see the whole year as a plain list instead.
 
 **Green-screen videos:** film or render on pure green, then add `chroma: true` to the item. The shader removes the green so the sky shows through. The December item "A wave goodbye" shows how. If your green isn't `#00ff00`, set `chromaKey: '#3fbf4a'` (or whatever it is).
 

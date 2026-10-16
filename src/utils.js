@@ -24,10 +24,10 @@ export function seededRandom(seed) {
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** three.js needs WebGL2, which nearly every phone, tablet and computer from the last several years has. */
 export function webglAvailable() {
   try {
-    const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    return !!document.createElement('canvas').getContext('webgl2');
   } catch {
     return false;
   }

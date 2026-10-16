@@ -39,8 +39,11 @@ const FALL_SPEED = 95; // paper flutters down slowly once it has slowed
 
 /** Paper confetti: a fixed pool of small tumbling pieces, drawn in one call. */
 export class Confetti {
-  constructor({ count = 560, far = 2600 } = {}) {
+  constructor({ count = 900, far = 2600, calm = false } = {}) {
     this.count = count;
+    // The calm version falls slower and tumbles less.
+    this.fallSpeed = FALL_SPEED * (calm ? 0.6 : 1);
+    this.spinScale = calm ? 0.45 : 1;
     this.cursor = 0;
     this.live = 0;
     this.pos = new Float32Array(count * 3);
@@ -100,8 +103,8 @@ export class Confetti {
     const len = Math.hypot(ax, ay, az) || 1;
     this.axis.set([ax / len, ay / len, az / len], i * 3);
     this.angle[i] = Math.random() * Math.PI * 2;
-    this.spin[i] = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 5);
-    this.size[i] = 7 + Math.random() * 6;
+    this.spin[i] = (Math.random() < 0.5 ? -1 : 1) * (3 + Math.random() * 5) * this.spinScale;
+    this.size[i] = 13 + Math.random() * 11;
     this.seed[i] = Math.random() * 100;
   }
 
@@ -113,7 +116,7 @@ export class Confetti {
         center.y + Math.random() * 120,
         center.z + (Math.random() - 0.5) * depth,
         (Math.random() - 0.5) * 30,
-        -FALL_SPEED * (0.6 + Math.random() * 0.5),
+        -this.fallSpeed * (0.6 + Math.random() * 0.5),
         (Math.random() - 0.5) * 30,
       );
     }
@@ -138,7 +141,7 @@ export class Confetti {
       this.vel[j] *= drag;
       this.vel[j + 2] *= drag;
       // Fall, but no faster than paper does, with a little side-to-side sway.
-      this.vel[j + 1] = Math.max(this.vel[j + 1] - GRAVITY * dt, -FALL_SPEED);
+      this.vel[j + 1] = Math.max(this.vel[j + 1] - GRAVITY * dt, -this.fallSpeed);
       const sway = Math.sin(time * 2.2 + this.seed[i]) * 26;
       this.pos[j] += (this.vel[j] + sway) * dt;
       this.pos[j + 1] += this.vel[j + 1] * dt;

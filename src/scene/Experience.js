@@ -171,10 +171,10 @@ export class Experience {
     }
 
     if (this.birthday) {
-      this.fireworks = new Fireworks();
+      this.fireworks = new Fireworks({ calm: this.rm });
       this.fireworks.setPixelRatio(this.renderer.getPixelRatio());
       this.scene.add(this.fireworks.points);
-      this.confetti = new Confetti();
+      this.confetti = new Confetti({ calm: this.rm });
       this.scene.add(this.confetti.mesh);
     }
 
@@ -239,6 +239,9 @@ export class Experience {
       onComplete: () => {
         this.mode = 'free';
         this.targetZ = VIEW;
+        // A month picked during the opening flight is honoured once it lands.
+        if (this.pendingZ != null) this.move(this.pendingZ - this.targetZ);
+        this.pendingZ = null;
       },
     });
   }
@@ -255,6 +258,7 @@ export class Experience {
     const z = this.monthZ(clamp(i, 0, this.months.length - 1)) + VIEW;
     if (this.mode === 'focus') this.close(z);
     else if (this.mode === 'free') this.move(z - this.targetZ);
+    else if (this.mode === 'starting') this.pendingZ = z;
   }
 
   goToItem(index) {
@@ -594,16 +598,22 @@ export class Experience {
 
   // ------------------------------------------------------------------ birthday fireworks
 
-  /** Fireworks go up on their own while you're near the birthday. */
+  /**
+   * Fireworks go up on their own while you're near the birthday.
+   * The celebration plays on every device. If the device asks for reduced motion,
+   * it's a calmer version (fewer, slower, no bright flash) rather than switched off,
+   * so nobody has to change a setting to see it.
+   */
   updateFireworks(dt) {
     if (!this.fireworks) return;
+    const calm = this.rm;
     const depth = this.cam.z - this.birthday.z;
     const near = depth > -300 && depth < 2300;
-    if (near && !this.rm) {
+    if (near) {
       this.fireworkTimer -= dt;
       if (this.fireworkTimer <= 0) {
         this.launchFirework();
-        this.fireworkTimer = 0.35 + Math.random() * 0.7;
+        this.fireworkTimer = calm ? 1.4 + Math.random() * 1.2 : 0.35 + Math.random() * 0.7;
       }
     }
     for (let i = this.fireworkQueue.length - 1; i >= 0; i--) {
@@ -615,18 +625,42 @@ export class Experience {
     }
     if (this.fireworks.active) this.fireworks.update(dt);
 
-    // Confetti drifts down while the cake is in sight.
-    if (depth > 150 && depth < 2200 && !this.rm) {
-      this.confettiDue = (this.confettiDue || 0) + dt * 34;
+    // Confetti falls while the cake is in sight. The moment it comes into view the
+    // screen fills with confetti and a burst pops from the cake; after that, new
+    // pieces keep arriving just above the top edge so they fall straight into view.
+    const inSight = depth > 150 && depth < 2300;
+    if (inSight) {
+      if (!this.cakeInSight) {
+        this.cakeInSight = true;
+        this.spawnConfetti(calm ? 110 : 240, true);
+        if (!calm) this.confetti.pop(this.birthday.cakeTop(), 120);
+      }
+      this.confettiDue = (this.confettiDue || 0) + dt * (calm ? 16 : 45);
       const n = Math.floor(this.confettiDue);
       if (n > 0) {
         this.confettiDue -= n;
-        const spread = clamp(this.camera.aspect / 1.5, 0.55, 1);
-        const p = this.birthday.group.position;
-        this.confetti.rain(new THREE.Vector3(p.x, 600, this.birthday.z + 50), n, 1500 * spread, 900);
+        this.spawnConfetti(n, false);
       }
+    } else if (!inSight) {
+      this.cakeInSight = false;
     }
-    this.confetti.update(dt, this.time, -750);
+    this.confetti.update(dt, this.time, -1100);
+  }
+
+  /** Confetti inside the current view around the cake: anywhere on screen, or just above it. */
+  spawnConfetti(n, anywhere) {
+    const tan = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    const zNear = Math.min(this.birthday.z + 700, this.cam.z - 300);
+    const zFar = this.birthday.z - 700;
+    if (zNear <= zFar) return;
+    for (let k = 0; k < n; k++) {
+      const z = lerp(zFar, zNear, Math.random());
+      const halfH = (this.cam.z - z) * tan;
+      const halfW = halfH * this.camera.aspect;
+      const y = this.cam.y + (anywhere ? (Math.random() * 2 - 1) * halfH : halfH * (1.03 + Math.random() * 0.12));
+      const x = this.cam.x + (Math.random() * 2 - 1) * halfW * 0.96;
+      this.confetti.spawn(x, y, z, (Math.random() - 0.5) * 40, -60 - Math.random() * 40, (Math.random() - 0.5) * 30);
+    }
   }
 
   launchFirework(close = false) {
@@ -640,9 +674,10 @@ export class Experience {
 
   /** A volley of fireworks and a pop of confetti, for opening or clicking the cake. */
   celebrate() {
-    if (!this.fireworks || this.rm) return;
-    for (let i = 0; i < 7; i++) this.fireworkQueue.push(i * 0.18 + Math.random() * 0.1);
-    this.confetti.pop(this.birthday.cakeTop(), 160);
+    if (!this.fireworks) return;
+    const calm = this.rm;
+    for (let i = 0; i < (calm ? 3 : 7); i++) this.fireworkQueue.push(i * (calm ? 0.5 : 0.18) + Math.random() * 0.1);
+    this.confetti.pop(this.birthday.cakeTop(), calm ? 60 : 160);
   }
 
   /**
